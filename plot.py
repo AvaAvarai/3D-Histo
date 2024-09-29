@@ -4,7 +4,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
+
+__WINDOW_TITLE__ = "3D Histogram View of CSV Dataset Features"
+__X_LABEL__ = "Feature Values"
+__Y_LABEL__ = "Feature Index"
+__Z_LABEL__ = "Frequency"
 
 def plot_3d_histogram(csv_file):
     # Load the CSV dataset
@@ -27,6 +32,9 @@ def plot_3d_histogram(csv_file):
     hist_width = 0.8
     offset_gap = 2
     
+    # Flag for min-max normalization
+    normalize = False
+    
     def update_plot(bins):
         ax.clear()
         
@@ -35,6 +43,8 @@ def plot_3d_histogram(csv_file):
             # Ensure the column contains numerical data
             try:
                 feature_data = data[feature_name].astype(float)
+                if normalize:
+                    feature_data = (feature_data - feature_data.min()) / (feature_data.max() - feature_data.min())
             except ValueError:
                 print(f"Skipping non-numerical column: {feature_name}")
                 continue
@@ -49,12 +59,12 @@ def plot_3d_histogram(csv_file):
             ax.bar(bin_centers, hist, zs=offset_gap * i, zdir='y', alpha=0.8, width=hist_width, label=feature_name)
         
         # Set labels for the axes
-        ax.set_xlabel('Feature Values')
-        ax.set_ylabel('Feature Index (Separated)')
-        ax.set_zlabel('Frequency')
+        ax.set_xlabel(__X_LABEL__)
+        ax.set_ylabel(__Y_LABEL__)
+        ax.set_zlabel(__Z_LABEL__)
         
         # Set the title and legend
-        ax.set_title("3D Histogram View of CSV Dataset Features (Excluding Class)")
+        ax.set_title(__WINDOW_TITLE__)
         ax.legend()
         
         fig.canvas.draw_idle()
@@ -63,9 +73,20 @@ def plot_3d_histogram(csv_file):
     update_plot(initial_bins)
     
     # Add slider for bin size control
-    slider_ax = fig.add_axes([0.2, 0.02, 0.6, 0.03])
-    slider = Slider(slider_ax, 'Bins', 5, 50, valinit=initial_bins, valstep=1)
+    slider_ax = fig.add_axes([0.2, 0.02, 0.55, 0.03])
+    slider = Slider(slider_ax, 'Number of Bins', 5, 50, valinit=initial_bins, valstep=1)
     slider.on_changed(update_plot)
+    
+    # Add button for min-max normalization toggle
+    button_ax = fig.add_axes([0.85, 0.02, 0.15, 0.03])
+    button = Button(button_ax, 'Toggle Normalize')
+    
+    def toggle_normalize(event):
+        nonlocal normalize
+        normalize = not normalize
+        update_plot(slider.val)
+    
+    button.on_clicked(toggle_normalize)
     
     # Show the plot
     plt.show()
