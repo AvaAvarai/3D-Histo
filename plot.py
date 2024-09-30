@@ -66,7 +66,7 @@ def plot_3d_histogram(csv_file):
         
         # Set the title and legend
         ax.set_title(__WINDOW_TITLE__)
-        ax.legend()
+        ax.legend(loc='upper right', bbox_to_anchor=(1, 1), ncol=1, fontsize='small')
         
         fig.canvas.draw_idle()
     
@@ -79,7 +79,7 @@ def plot_3d_histogram(csv_file):
     
     # Add slider for transparency control
     alpha_slider_ax = fig.add_axes([0.2, 0.06, 0.55, 0.03])
-    alpha_slider = Slider(alpha_slider_ax, 'Transparency', 0, 1, valinit=initial_alpha, valstep=0.1)
+    alpha_slider = Slider(alpha_slider_ax, 'Alpha Value', 0, 1, valinit=initial_alpha, valstep=0.1)
     
     def update(val):
         update_plot(bin_slider.val, alpha_slider.val)
@@ -87,8 +87,8 @@ def plot_3d_histogram(csv_file):
     bin_slider.on_changed(update)
     alpha_slider.on_changed(update)
     
-    # Add button for min-max normalization toggle
-    button_ax = fig.add_axes([0.85, 0.02, 0.15, 0.03])
+    # Add button for min-max normalization toggle with margin
+    button_ax = fig.add_axes([0.80, 0.02, 0.15, 0.03])
     button = Button(button_ax, 'Toggle Normalize')
     
     def toggle_normalize(event):
