@@ -27,15 +27,16 @@ def plot_3d_histogram(csv_file):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
     
-    # Initial bin and offset settings
+    # Initial bin, offset, and transparency settings
     initial_bins = 15
+    initial_alpha = 0.8
     hist_width = 0.8
     offset_gap = 2
     
     # Flag for min-max normalization
     normalize = False
     
-    def update_plot(bins):
+    def update_plot(bins, alpha):
         ax.clear()
         
         # Iterate over each feature, excluding the 'class' column
@@ -49,14 +50,14 @@ def plot_3d_histogram(csv_file):
                 print(f"Skipping non-numerical column: {feature_name}")
                 continue
             
-            # Calculate histogram data
+            # Calculate histogram data using the same number of bins for each feature
             hist, bin_edges = np.histogram(feature_data, bins=int(bins))
             
             # Center bin edges
             bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
             
             # Create the histogram as a 3D bar plot
-            ax.bar(bin_centers, hist, zs=offset_gap * i, zdir='y', alpha=0.8, width=hist_width, label=feature_name)
+            ax.bar(bin_centers, hist, zs=offset_gap * i, zdir='y', alpha=alpha, width=hist_width, label=feature_name)
         
         # Set labels for the axes
         ax.set_xlabel(__X_LABEL__)
@@ -70,12 +71,21 @@ def plot_3d_histogram(csv_file):
         fig.canvas.draw_idle()
     
     # Initial plot
-    update_plot(initial_bins)
+    update_plot(initial_bins, initial_alpha)
     
     # Add slider for bin size control
-    slider_ax = fig.add_axes([0.2, 0.02, 0.55, 0.03])
-    slider = Slider(slider_ax, 'Number of Bins', 5, 50, valinit=initial_bins, valstep=1)
-    slider.on_changed(update_plot)
+    bin_slider_ax = fig.add_axes([0.2, 0.02, 0.55, 0.03])
+    bin_slider = Slider(bin_slider_ax, 'Number of Bins', 5, 50, valinit=initial_bins, valstep=1)
+    
+    # Add slider for transparency control
+    alpha_slider_ax = fig.add_axes([0.2, 0.06, 0.55, 0.03])
+    alpha_slider = Slider(alpha_slider_ax, 'Transparency', 0, 1, valinit=initial_alpha, valstep=0.1)
+    
+    def update(val):
+        update_plot(bin_slider.val, alpha_slider.val)
+    
+    bin_slider.on_changed(update)
+    alpha_slider.on_changed(update)
     
     # Add button for min-max normalization toggle
     button_ax = fig.add_axes([0.85, 0.02, 0.15, 0.03])
@@ -84,7 +94,7 @@ def plot_3d_histogram(csv_file):
     def toggle_normalize(event):
         nonlocal normalize
         normalize = not normalize
-        update_plot(slider.val)
+        update_plot(bin_slider.val, alpha_slider.val)
     
     button.on_clicked(toggle_normalize)
     
