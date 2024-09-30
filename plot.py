@@ -88,6 +88,9 @@ def plot_3d_histogram(csv_file):
     
     button.on_clicked(toggle_normalize)
     
+    # Enable 3D rotation
+    ax.mouse_init()
+    
     # Show the plot
     plt.show()
 
